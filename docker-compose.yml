@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ddmerchant
+      POSTGRES_PASSWORD: ddmerchant
+      POSTGRES_DB: ddmerchant
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  rabbit:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  pricing-engine:
+    build:
+      context: ./services/pricing-engine
+      dockerfile: Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ddmerchant
+      SPRING_DATASOURCE_USERNAME: ddmerchant
+      SPRING_DATASOURCE_PASSWORD: ddmerchant
+    depends_on:
+      - db
+      - rabbit
+    ports:
+      - "8080:8080"
+volumes:
+  db_data:
